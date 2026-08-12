@@ -1,0 +1,26 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+@layer base {
+    /*
+     * On the root element, not on a wrapper div. The root background propagates
+     * to the canvas, which is what fills the overscroll area on mobile and any
+     * region exposed by overflow. A wrapper only paints its own box, so
+     * rubber-banding past it shows the default white through.
+     */
+    html {
+        @apply bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100;
+
+        /* Let native scrollbars, form controls and the overscroll glow follow. */
+        color-scheme: light dark;
+    }
+
+    /*
+     * Deep links land under the sticky mobile header without the scroll margin,
+     * and on a long field list the target is impossible to spot without the tint.
+     */
+    :target {
+        scroll-margin-top: 4.5rem;
+        @apply rounded bg-sky-50 dark:bg-sky-950/40;
+    }
+}

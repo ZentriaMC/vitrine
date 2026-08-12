@@ -1,0 +1,216 @@
+syntax = "proto3";
+
+// The awkward end of the spectrum. Every construct here exists because it is
+// something a schema browser has to render correctly:
+//
+//   - nested messages and nested enums (FQN flattening)
+//   - map fields (synthesized nested MapEntry types that must be hidden)
+//   - oneof (real) vs. proto3 `optional` (synthesized single-member oneof)
+//   - reserved ranges and names
+//   - deprecation on a message, a field and a method
+//   - custom options on all three
+//   - cross-file and well-known-type references (cross-linking)
+//   - all four RPC streaming modes
+package zentria.vitrine.demo.v1;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+import "zentria/vitrine/demo/v1/simple.proto";
+import "zentria/vitrine/options/v1/annotations.proto";
+
+// A group of machines managed as one unit.
+message Fleet {
+  option (zentria.vitrine.options.v1.owner) = "platform-team";
+
+  // Physical location a fleet is pinned to.
+  enum Region {
+    // Unset.
+    REGION_UNSPECIFIED = 0;
+    // Tallinn.
+    REGION_EU_NORTH_1 = 1;
+    // Frankfurt.
+    REGION_EU_CENTRAL_1 = 2;
+  }
+
+  // One machine within the fleet.
+  message Member {
+    // What the machine is built out of.
+    message Hardware {
+      // Physical core count, not threads.
+      uint32 cores = 1;
+
+      // Installed memory in bytes.
+      uint64 memory_bytes = 2;
+    }
+
+    // Stable machine identifier.
+    string id = 1;
+
+    // Hardware the machine reports at boot.
+    Hardware hardware = 2;
+
+    // Status observed by the most recent probe. Defined in simple.proto, so
+    // this exercises same-package cross-file linking.
+    Status last_status = 3;
+
+    // When the machine was last seen. Well-known type reference.
+    google.protobuf.Timestamp last_seen = 4;
+  }
+
+  // Field numbers burned by the pre-v1 layout.
+  reserved 7, 9 to 11;
+  reserved "legacy_name";
+
+  // Human-readable fleet name, unique within a region.
+  string name = 1;
+
+  // Where the fleet runs.
+  Region region = 2;
+
+  // Machines currently in the fleet.
+  repeated Member members = 3;
+
+  // Free-form labels. A map field, which protoc lowers into a synthesized
+  // nested `LabelsEntry` message that must not show up in the UI.
+  map<string, string> labels = 4;
+
+  // Operator-supplied notes. Explicit proto3 `optional`, which protoc lowers
+  // into a synthesized single-member oneof named `_description`.
+  optional string description = 5;
+
+  // How often members are probed.
+  google.protobuf.Duration probe_interval = 6;
+
+  // Contact address for the fleet owner.
+  string owner_email = 8 [
+    deprecated = true,
+    (zentria.vitrine.options.v1.pii) = true,
+    (zentria.vitrine.options.v1.classification) = CLASSIFICATION_RESTRICTED
+  ];
+
+  // When the fleet was first created. Added in v2.
+  google.protobuf.Timestamp created_at = 14;
+
+  // How the fleet decides its size. A real oneof.
+  oneof scaling {
+    // Fixed member count, never adjusted.
+    uint32 fixed_size = 12;
+
+    // Bounds within which the fleet resizes itself.
+    Autoscale autoscale = 13;
+  }
+}
+
+// Bounds for a self-resizing fleet.
+message Autoscale {
+  // Never scale below this many members.
+  uint32 min_members = 1;
+
+  // Never scale above this many members.
+  uint32 max_members = 2;
+
+  // Target mean CPU utilisation, 0.0 to 1.0. Widened in v2.
+  double target_utilization = 3;
+}
+
+// Asks for one fleet to be deleted.
+message DeleteFleetRequest {
+  // Name of the fleet to delete.
+  string name = 1;
+}
+
+// Reports the outcome of a deletion.
+message DeleteFleetResponse {
+  // How many members were released.
+  uint32 released = 1;
+}
+
+// Asks for one fleet by name.
+message GetFleetRequest {
+  // Name of the fleet to fetch.
+  string name = 1;
+}
+
+// Carries a single fleet.
+message GetFleetResponse {
+  // The requested fleet.
+  Fleet fleet = 1;
+}
+
+// Asks for every fleet in a region.
+message ListFleetsRequest {
+  // Region to enumerate.
+  Fleet.Region region = 1;
+}
+
+// Carries one fleet of a streamed listing.
+message ListFleetsResponse {
+  // One fleet per message on the stream.
+  Fleet fleet = 1;
+}
+
+// Carries one probe result being uploaded.
+message ReportProbesRequest {
+  // Fleet the probe belongs to.
+  string fleet_name = 1;
+
+  // Machine that was probed.
+  string member_id = 2;
+
+  // What the probe found.
+  Status status = 3;
+}
+
+// Summarises an upload of probe results.
+message ReportProbesResponse {
+  // How many probe results were accepted.
+  uint64 accepted = 1;
+}
+
+// Carries a command for a fleet member.
+message AttachRequest {
+  // Machine to send the command to.
+  string member_id = 1;
+
+  // Raw command bytes.
+  bytes payload = 2;
+}
+
+// Carries output from a fleet member.
+message AttachResponse {
+  // Raw output bytes.
+  bytes payload = 1;
+}
+
+// Reads and mutates fleets. Exercises all four streaming modes.
+service FleetService {
+  // Fetch a single fleet by name.
+  rpc GetFleet(GetFleetRequest) returns (GetFleetResponse) {
+    option (zentria.vitrine.options.v1.auth_scope) = "fleet:read";
+    option (zentria.vitrine.options.v1.audit) = true;
+  }
+
+  // Delete a fleet and release its members. Added in v2.
+  rpc DeleteFleet(DeleteFleetRequest) returns (DeleteFleetResponse) {
+    option (zentria.vitrine.options.v1.auth_scope) = "fleet:admin";
+    option (zentria.vitrine.options.v1.audit) = true;
+  }
+
+  // Stream every fleet in a region. Server streaming.
+  rpc ListFleets(ListFleetsRequest) returns (stream ListFleetsResponse) {
+    option (zentria.vitrine.options.v1.auth_scope) = "fleet:read";
+  }
+
+  // Upload a batch of probe results. Client streaming.
+  rpc ReportProbes(stream ReportProbesRequest) returns (ReportProbesResponse) {
+    option (zentria.vitrine.options.v1.auth_scope) = "fleet:write";
+    option (zentria.vitrine.options.v1.audit) = true;
+  }
+
+  // Attach to a member's console. Bidirectional streaming.
+  rpc Attach(stream AttachRequest) returns (stream AttachResponse) {
+    option (zentria.vitrine.options.v1.auth_scope) = "fleet:admin";
+    option (zentria.vitrine.options.v1.audit) = true;
+    option deprecated = true;
+  }
+}

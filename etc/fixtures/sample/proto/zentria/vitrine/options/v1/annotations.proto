@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+// Custom options used across Zentria schemas.
+//
+// These are the annotations a generic schema browser cannot know about, and
+// the main reason an in-house viewer beats an off-the-shelf one: the field
+// classification and the RPC auth scope are the things reviewers actually
+// need to see.
+package zentria.vitrine.options.v1;
+
+import "google/protobuf/descriptor.proto";
+
+// How sensitive the contents of a field are.
+enum Classification {
+  // Unset; treated as CLASSIFICATION_INTERNAL by tooling.
+  CLASSIFICATION_UNSPECIFIED = 0;
+  // Safe to expose to any authenticated partner.
+  CLASSIFICATION_PUBLIC = 1;
+  // Visible to Zentria staff only.
+  CLASSIFICATION_INTERNAL = 2;
+  // Access is logged and requires a break-glass grant.
+  CLASSIFICATION_RESTRICTED = 3;
+}
+
+extend google.protobuf.FieldOptions {
+  // Marks a field as carrying personally identifiable information.
+  optional bool pii = 50001;
+
+  // Sensitivity of the field's contents.
+  optional Classification classification = 50002;
+}
+
+extend google.protobuf.MethodOptions {
+  // OAuth scope a caller must hold to invoke this method.
+  optional string auth_scope = 50010;
+
+  // Whether calls to this method are written to the audit log.
+  optional bool audit = 50011;
+}
+
+extend google.protobuf.MessageOptions {
+  // Team accountable for this message's schema.
+  optional string owner = 50020;
+}

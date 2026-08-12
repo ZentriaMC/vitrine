@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+// The simple end of the spectrum: flat messages, one enum, one unary RPC,
+// no imports. Exercises the plainest path through the normalizer.
+package zentria.vitrine.demo.v1;
+
+// The result of a single health probe.
+enum Status {
+  // Default value; never set explicitly.
+  STATUS_UNSPECIFIED = 0;
+
+  // The target answered within the deadline.
+  STATUS_OK = 1;
+
+  // The target answered but reported degraded service.
+  STATUS_DEGRADED = 2;
+
+  // The target did not answer at all.
+  STATUS_DOWN = 3;
+
+  // The target could not be routed to. Added in v2.
+  STATUS_UNREACHABLE = 4;
+}
+
+// Asks for a single target to be probed.
+message PingRequest {
+  // Opaque identifier of the target to probe.
+  string target = 1;
+}
+
+// Carries the outcome of a probe.
+message PingResponse {
+  // Observed status of the target.
+  Status status = 1;
+
+  // Round-trip time of the probe, in milliseconds.
+  uint32 rtt_ms = 2;
+}
+
+// Probes targets and reports whether they are healthy.
+service PingService {
+  // Probe a single target and return as soon as it answers.
+  rpc Ping(PingRequest) returns (PingResponse);
+}
