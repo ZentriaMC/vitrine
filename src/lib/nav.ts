@@ -1,6 +1,6 @@
 import type { IrNode } from './ir';
 
-/** Sidebar shape. Kept out of the server module so the UI can import the type. */
+/** One symbol in the sidebar. */
 export interface NavSymbol {
     fqn: string;
     name: string;
@@ -10,12 +10,29 @@ export interface NavSymbol {
     depth: number;
 }
 
+/**
+ * A file, without its symbols.
+ *
+ * The count is what the sidebar shows before a file is expanded. Shipping every
+ * symbol up front cost 2 MB of the 3 MB an Injective page weighed -- once as
+ * markup, once again as hydration state.
+ */
 export interface NavFile {
     name: string;
-    symbols: NavSymbol[];
+    symbols: number;
 }
 
 export interface NavPackage {
     name: string;
     files: NavFile[];
 }
+
+/** Response from the nav endpoint, for a search or a single file. */
+export interface NavResult {
+    symbols: NavSymbol[];
+    /** How many matched in total, which may exceed what was returned. */
+    total: number;
+}
+
+/** Search results are capped; the sidebar says so rather than silently trimming. */
+export const NAV_SEARCH_LIMIT = 200;

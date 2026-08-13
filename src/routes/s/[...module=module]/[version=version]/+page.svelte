@@ -156,6 +156,14 @@
                 next column. Wrapping flex items cannot overlap, and they stack
                 instead of colliding when the viewport is narrow.
             -->
+            {#if !data.inline}
+                <p class="mt-3 font-mono text-xs text-zinc-500">
+                    {file.counts.messages} messages · {file.counts.enums} enums ·
+                    {file.counts.services} services
+                    <span class="text-zinc-400">· open it in the sidebar to list them</span>
+                </p>
+            {/if}
+
             <div class="mt-4 flex flex-wrap gap-x-10 gap-y-5 text-sm">
                 {#each [['Messages', file.messages], ['Enums', file.enums], ['Services', file.services]] as const as [label, fqns] (label)}
                     {#if fqns.length}

@@ -1,9 +1,8 @@
 import { error } from '@sveltejs/kit';
 import { listModules } from '$lib/server/catalog';
+import { navTree, symbolsInFile } from '$lib/server/nav';
 import { RegistryError, registryHost } from '$lib/server/registry';
 import { loadSchema } from '$lib/server/schema';
-import type { IrNode } from '$lib/ir';
-import type { NavSymbol } from '$lib/nav';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params }) => {
@@ -19,37 +18,11 @@ export const load: LayoutServerLoad = async ({ params }) => {
 
     const { ir, info } = loaded;
 
-    const depthOf = (node: IrNode): number => {
-        let depth = 0;
-        let parent = 'parent' in node ? node.parent : undefined;
-        while (parent) {
-            depth += 1;
-            const next = ir.nodes[parent];
-            parent = next && 'parent' in next ? next.parent : undefined;
-        }
-        return depth;
-    };
-
-    const byFile = new Map<string, NavSymbol[]>();
-    for (const node of Object.values(ir.nodes)) {
-        const symbols = byFile.get(node.file) ?? [];
-        symbols.push({
-            fqn: node.fqn,
-            name: node.name,
-            kind: node.kind,
-            deprecated: node.deprecated,
-            depth: depthOf(node)
-        });
-        byFile.set(node.file, symbols);
-    }
-
-    const packages = new Map<string, { name: string; symbols: NavSymbol[] }[]>();
-    for (const file of ir.files) {
-        const symbols = (byFile.get(file.name) ?? []).sort((a, b) => a.fqn.localeCompare(b.fqn));
-        const files = packages.get(file.package) ?? [];
-        files.push({ name: file.name, symbols });
-        packages.set(file.package, files);
-    }
+    // The file the current symbol lives in is expanded on arrival, so landing on
+    // a type still shows its neighbours without a round trip. Everything else is
+    // fetched when opened.
+    const current = params.fqn ? ir.nodes[params.fqn] : undefined;
+    const openFile = current?.file;
 
     const module = (await listModules()).find((m) => m.name === params.module);
 
@@ -58,7 +31,9 @@ export const load: LayoutServerLoad = async ({ params }) => {
         version: params.version,
         versions: module?.versions ?? [params.version],
         info,
-        packages: [...packages].map(([name, files]) => ({ name, files })),
+        packages: navTree(ir),
+        openFile,
+        openSymbols: openFile ? symbolsInFile(ir, openFile) : [],
         counts: {
             files: ir.files.length,
             symbols: Object.keys(ir.nodes).length

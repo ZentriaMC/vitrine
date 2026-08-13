@@ -20,6 +20,7 @@ describe('module matcher', () => {
         expect(matchModule('zentria/subvault/0.1.0/t')).toBe(false);
         expect(matchModule('a/b/services')).toBe(false);
         expect(matchModule('a/b/schema.binpb')).toBe(false);
+        expect(matchModule('a/b/nav')).toBe(false);
     });
 
     it('allows a reserved word anywhere but the end', () => {
@@ -47,5 +48,6 @@ describe('version matcher', () => {
         expect(matchVersion('diff')).toBe(false);
         expect(matchVersion('t')).toBe(false);
         expect(matchVersion('schema.binpb')).toBe(false);
+        expect(matchVersion('nav')).toBe(false);
     });
 });

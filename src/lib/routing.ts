@@ -6,4 +6,4 @@
  * be shadowed by its own sub-route -- pathological, and the price of arbitrary
  * module depth.
  */
-export const RESERVED_SEGMENTS = new Set(['t', 'm', 'diff', 'services', 'schema.binpb']);
+export const RESERVED_SEGMENTS = new Set(['t', 'm', 'nav', 'diff', 'services', 'schema.binpb']);
