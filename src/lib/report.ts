@@ -9,6 +9,16 @@
 /** Attachments carrying `buf breaking` output. See docs/oci-artifact.md. */
 export const BREAKING_ARTIFACT_TYPE = 'application/vnd.zentria.protoschema.breaking.v1';
 
+/**
+ * A cosign signature, which modern cosign writes as a Sigstore bundle attached
+ * as an OCI referrer -- so it arrives through the same path as our own reports.
+ * The version suffix moves, so match on the prefix.
+ */
+export const SIGSTORE_ARTIFACT_PREFIX = 'application/vnd.dev.sigstore.bundle';
+
+export const isSignature = (artifactType: string | undefined) =>
+    artifactType?.startsWith(SIGSTORE_ARTIFACT_PREFIX) === true;
+
 export interface BreakingFinding {
     /** Module-relative, matching FileDescriptorProto.name. */
     path: string;

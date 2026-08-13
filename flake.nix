@@ -21,6 +21,7 @@
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
             buf
+            cosign
             oras
             skopeo
             just

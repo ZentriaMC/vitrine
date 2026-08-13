@@ -7,7 +7,12 @@
  */
 
 import { env } from '$env/dynamic/private';
-import { BREAKING_ARTIFACT_TYPE, parseFindings, type BreakingFinding } from '$lib/report';
+import {
+    BREAKING_ARTIFACT_TYPE,
+    isSignature,
+    parseFindings,
+    type BreakingFinding
+} from '$lib/report';
 import { catalog, manifest, referrerPayload, referrers, tags, type Manifest } from './registry';
 
 // A vitrine registry holds nothing but schema artifacts, so every repository in
@@ -149,6 +154,8 @@ export interface ReferrerInfo {
     findings?: BreakingFinding[];
     /** Raw payload, shown when there is nothing structured to show instead. */
     text?: string;
+    /** Sigstore bundle, for signature referrers, to be verified by the caller. */
+    bundle?: string;
 }
 
 export async function listReferrers(repo: string, digest: string): Promise<ReferrerInfo[]> {
@@ -162,6 +169,11 @@ export async function listReferrers(repo: string, digest: string): Promise<Refer
                 size: r.size,
                 annotations: r.annotations ?? {}
             };
+            if (isSignature(r.artifactType)) {
+                const payload = await referrerPayload(repo, r.digest).catch(() => undefined);
+                return { ...base, bundle: payload?.text };
+            }
+
             if (r.artifactType !== BREAKING_ARTIFACT_TYPE) return base;
 
             const payload = await referrerPayload(repo, r.digest).catch(() => undefined);

@@ -142,6 +142,48 @@ schemas. If you ever put partner-scoped modules in one registry, revisit this --
 passing the viewer's token through would make the registry enforce visibility
 instead of vitrine.
 
+## Signature verification
+
+Schemas signed with `cosign sign --key` are verified against keys registered
+per module. cosign writes the signature as an OCI referrer, so it arrives
+through the same path as the breaking report -- no ingest change was needed.
+
+```sh
+cosign sign --key cosign.key registry/sample:v2.0.0
+
+curl -X POST http://vitrine/admin/keys -H 'content-type: application/json' \
+  -d '{"module":"sample","pem":"-----BEGIN PUBLIC KEY-----\n...","label":"release"}'
+```
+
+Four outcomes, kept distinct on purpose:
+
+| state          | meaning                                                           |
+| -------------- | ----------------------------------------------------------------- |
+| `verified`     | signature is valid under a key trusted for this module            |
+| `untrusted`    | validly signed, but not by a key we trust -- the interesting case |
+| `invalid`      | signature does not cover this artifact, or is malformed           |
+| `unverifiable` | not a key-signed DSSE bundle, e.g. keyless                        |
+
+Collapsing `untrusted` into "unverified" would hide the case worth seeing: a
+real signature by the wrong key.
+
+Verification checks the DSSE signature over the payload's PAE encoding **and**
+that the in-toto statement's subject digest is this artifact -- otherwise a
+signature could be lifted from one artifact onto another. Rekor inclusion and
+keyless (Fulcio) verification are deliberately not attempted; claiming them
+without doing them would be worse than not claiming them.
+
+### The admin API is a trust boundary
+
+`POST /admin/keys` decides what vitrine will call verified, so anyone who can
+reach it can make any signature verify. vitrine has no authentication of its
+own: **these paths must sit behind a reverse proxy that authenticates first.**
+`GET` lists keys, `DELETE /admin/keys/<id>` removes one.
+
+This is also the only persistent state vitrine has -- one SQLite table
+(`VITRINE_DB`, default `gen/vitrine.db`). Everything else remains a
+read-through cache over the registry.
+
 ## What the normalizer does
 
 The descriptor set is resolved but not _presentable_. The normalizer:

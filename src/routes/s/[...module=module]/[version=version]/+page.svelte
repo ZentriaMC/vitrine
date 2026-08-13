@@ -6,7 +6,7 @@
     import Comments from '$lib/components/Comments.svelte';
     import { shortName } from '$lib/ir';
     import { typeHref } from '$lib/links';
-    import { BREAKING_ARTIFACT_TYPE } from '$lib/report';
+    import { BREAKING_ARTIFACT_TYPE, isSignature } from '$lib/report';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
@@ -64,7 +64,37 @@
         <ul class="max-w-3xl space-y-3">
             {#each data.referrers as ref (ref.digest)}
                 <li>
-                    {#if ref.artifactType === BREAKING_ARTIFACT_TYPE}
+                    {#if isSignature(ref.artifactType)}
+                        {@const v = ref.verdict}
+                        <div
+                            class="flex flex-wrap items-baseline gap-x-2"
+                            title="{ref.artifactType} · {kb(ref.size)}"
+                        >
+                            <span class="text-sm font-semibold">Signature</span>
+                            {#if v?.status === 'verified'}
+                                <Badge tone="accent">verified</Badge>
+                                <span class="font-mono text-xs text-zinc-500">
+                                    {v.key?.label ?? v.key?.id}{v.key?.module === '*'
+                                        ? ' (any module)'
+                                        : ''}
+                                </span>
+                            {:else if v?.status === 'untrusted'}
+                                <Badge tone="warn">not trusted</Badge>
+                            {:else if v?.status === 'invalid'}
+                                <Badge tone="danger">invalid</Badge>
+                            {:else}
+                                <Badge>unverifiable</Badge>
+                            {/if}
+                            {#if ref.annotations['org.opencontainers.image.created']}
+                                <span class="font-mono text-xs text-zinc-400">
+                                    {ref.annotations['org.opencontainers.image.created']}
+                                </span>
+                            {/if}
+                        </div>
+                        {#if v && v.status !== 'verified'}
+                            <p class="mt-1 text-[13px] text-zinc-500">{v.reason}</p>
+                        {/if}
+                    {:else if ref.artifactType === BREAKING_ARTIFACT_TYPE}
                         <div
                             class="flex flex-wrap items-baseline gap-x-2"
                             title="{ref.artifactType} · {kb(ref.size)}"
