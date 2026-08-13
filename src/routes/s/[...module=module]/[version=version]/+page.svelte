@@ -148,16 +148,24 @@
                 </p>
             {/if}
 
-            <div class="mt-4 grid grid-cols-3 gap-6 text-sm">
+            <!--
+                Columns size to their content rather than to a third of the row.
+                `grid-cols-3` is repeat(3, minmax(0, 1fr)), and a monospace
+                identifier has no break opportunity, so anything longer than a
+                third of the width overflowed its track and painted over the
+                next column. Wrapping flex items cannot overlap, and they stack
+                instead of colliding when the viewport is narrow.
+            -->
+            <div class="mt-4 flex flex-wrap gap-x-10 gap-y-5 text-sm">
                 {#each [['Messages', file.messages], ['Enums', file.enums], ['Services', file.services]] as const as [label, fqns] (label)}
                     {#if fqns.length}
-                        <div>
+                        <div class="min-w-0">
                             <p class="mb-1 text-[11px] tracking-wide text-zinc-400 uppercase">
                                 {label}
                             </p>
                             <ul class="space-y-0.5 font-mono text-[13px]">
                                 {#each fqns as fqn (fqn)}
-                                    <li>
+                                    <li class="break-all">
                                         <a
                                             class="text-sky-700 hover:underline dark:text-sky-400"
                                             href={typeHref(fqn)}>{shortName(fqn)}</a
