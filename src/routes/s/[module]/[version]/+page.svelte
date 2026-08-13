@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { resolve } from '$app/paths';
     import Badge from '$lib/components/Badge.svelte';
     import Meta from '$lib/components/Meta.svelte';
     import { pageTitle } from '$lib/meta';
@@ -31,6 +32,17 @@
     <dl class="mt-2 grid max-w-3xl grid-cols-[auto_1fr] gap-x-4 font-mono text-xs text-zinc-500">
         <dt>digest</dt>
         <dd class="break-all">{data.info.digest}</dd>
+        <dt>schema</dt>
+        <dd>
+            <a
+                class="text-sky-700 hover:underline dark:text-sky-400"
+                href={resolve('/s/[module]/[version]/schema.binpb', {
+                    module: data.module,
+                    version: data.version
+                })}>descriptor set</a
+            >
+            <span class="text-zinc-400">&middot; grpcurl -protoset, buf curl --schema</span>
+        </dd>
         {#if data.info.created}
             <dt>built</dt>
             <dd>{data.info.created}</dd>

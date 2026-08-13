@@ -49,6 +49,30 @@ bun install
 just dev          # registry up, push the fixture as `dev`, then serve
 ```
 
+## Machine-readable access
+
+The schema is already machine-readable, so vitrine serves it rather than
+describing it:
+
+```
+GET /s/[module]/[version]/schema.binpb
+```
+
+A `FileDescriptorSet` straight through from the registry. It is self-contained,
+so anything that speaks protobuf works off it -- and a consumer needs neither
+`oras` nor registry credentials, because vitrine is the read proxy:
+
+```sh
+curl -sO http://vitrine/s/sample/v2.0.0/schema.binpb
+grpcurl -protoset schema.binpb list
+buf curl --schema schema.binpb ...
+buf breaking --against schema.binpb
+```
+
+The layer digest is a content hash, so it doubles as the ETag: a poller gets a
+304 rather than 100 kB. A version pinned by `sha256:` is served `immutable`,
+since it cannot change; a tag gets a short max-age, since it can be moved.
+
 ## Deploying
 
 `adapter-node`, so `bun run build` produces a plain Node server in `build/`:
