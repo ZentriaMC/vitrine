@@ -1,5 +1,7 @@
 <script lang="ts">
     import Badge from '$lib/components/Badge.svelte';
+    import Meta from '$lib/components/Meta.svelte';
+    import { pageTitle } from '$lib/meta';
     import Comments from '$lib/components/Comments.svelte';
     import { shortName } from '$lib/ir';
     import { typeHref } from '$lib/links';
@@ -12,6 +14,14 @@
 
     const count = (n: number, one: string) => `${n} ${n === 1 ? one : one + 's'}`;
 </script>
+
+<Meta
+    title={pageTitle(`${data.module}:${data.version}`)}
+    description="{data.counts.symbols} symbols in {data.counts.files} files.{data.info.packages
+        .length
+        ? ' Packages: ' + data.info.packages.join(', ') + '.'
+        : ''}"
+/>
 
 <header class="mb-8">
     <h1 class="font-mono text-xl font-semibold tracking-tight">

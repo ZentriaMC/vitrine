@@ -1,6 +1,8 @@
 <script lang="ts">
     import { goto } from '$app/navigation';
     import Badge from '$lib/components/Badge.svelte';
+    import Meta from '$lib/components/Meta.svelte';
+    import { pageTitle } from '$lib/meta';
     import { displayType, type ChangeKind, type NodeDiff } from '$lib/diff';
     import { diffHref, typeHref } from '$lib/links';
     import type { PageData } from './$types';
@@ -28,6 +30,12 @@
         return `${n} ${n === 1 ? 'change' : 'changes'}`;
     };
 </script>
+
+<Meta
+    title={pageTitle(`${data.against} → ${data.version}`, data.module)}
+    description="{data.diff.counts.added} added, {data.diff.counts.removed} removed, {data.diff
+        .counts.modified} modified."
+/>
 
 <header class="border-b border-zinc-200 pb-5 dark:border-zinc-800">
     <h1 class="font-mono text-xl font-semibold tracking-tight">Changes</h1>

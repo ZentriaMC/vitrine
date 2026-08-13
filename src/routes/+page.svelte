@@ -1,9 +1,19 @@
 <script lang="ts">
     import { resolve } from '$app/paths';
+    import Meta from '$lib/components/Meta.svelte';
+    import { pageTitle } from '$lib/meta';
     import type { PageData } from './$types';
 
     let { data }: { data: PageData } = $props();
 </script>
+
+<Meta
+    title={pageTitle()}
+    description="Protobuf and gRPC schemas served from {data.registry}: {data.modules.length} {data
+        .modules.length === 1
+        ? 'module'
+        : 'modules'}."
+/>
 
 <div class="mx-auto max-w-3xl px-4 py-10 md:px-8">
     <header class="mb-8">

@@ -1,6 +1,8 @@
 <script lang="ts">
     import { methodHref, typeHref } from '$lib/links';
     import Badge from '$lib/components/Badge.svelte';
+    import Meta from '$lib/components/Meta.svelte';
+    import { pageTitle } from '$lib/meta';
     import Comments from '$lib/components/Comments.svelte';
     import Options from '$lib/components/Options.svelte';
     import TypeRef from '$lib/components/TypeRef.svelte';
@@ -55,6 +57,11 @@
             .map((key) => [key, buckets[key]] as const);
     });
 </script>
+
+<Meta
+    title={pageTitle('Services', `${data.module}:${data.version}`)}
+    description="{rows.length} RPCs across {data.services.length} services."
+/>
 
 <header class="mb-6">
     <h1 class="font-mono text-xl font-semibold tracking-tight">Services</h1>

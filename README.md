@@ -158,6 +158,12 @@ keeps you on the same page across versions, so comparing one type between two
 releases is one click -- landing on a 404 because the symbol was removed is a
 useful answer too.
 
+Every page carries OpenGraph metadata, and for a type or an RPC the description
+is its doc comment -- pasting a schema link into chat previews the prose the
+author already wrote. No `og:image`: a schema browser has nothing to put in one,
+and a logo card makes previews worse rather than better, so the card type is
+`summary`.
+
 Links inside a schema go through `src/lib/links.ts`, which reads module and
 version off the route rather than threading them through every component. That
 module also maps well-known types to their protobuf.dev anchors -- `Timestamp`

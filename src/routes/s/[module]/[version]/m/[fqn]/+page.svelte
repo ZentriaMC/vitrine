@@ -1,6 +1,8 @@
 <script lang="ts">
     import { methodHref, typeHref } from '$lib/links';
     import Badge from '$lib/components/Badge.svelte';
+    import Meta from '$lib/components/Meta.svelte';
+    import { pageTitle, summarize } from '$lib/meta';
     import MethodCard from '$lib/components/MethodCard.svelte';
     import type { PageData } from './$types';
 
@@ -8,6 +10,12 @@
 
     let siblings = $derived(data.service.methods.filter((m) => m.name !== data.method.name));
 </script>
+
+<Meta
+    title={pageTitle(`${data.service.name}.${data.method.name}`, `${data.module}:${data.version}`)}
+    description={summarize(data.method.comments.leading) ?? `rpc in ${data.service.fqn}`}
+    type="article"
+/>
 
 <header class="border-b border-zinc-200 pb-5 dark:border-zinc-800">
     <div class="flex flex-wrap items-center gap-2">
