@@ -64,8 +64,10 @@ filesystem -- `buf`, `oras` and `skopeo` are build-time tools that live in the
 justfile, not the request path. Put vitrine in front of a registry, set the
 environment, and it works as-is.
 
-Configuration is read from `process.env` at startup, not inlined at build, so
-one image runs against any registry. An unreachable registry is reported rather
+Configuration comes from `$env/dynamic/private`, SvelteKit's runtime env, not
+from `$env/static/private` (which inlines at build) and not from `process.env`
+(which ties the server to adapters that expose it). One build runs against any
+registry. An unreachable registry is reported rather
 than thrown: `/` renders an explanatory panel, and a schema route answers 503
 (as opposed to 404, which means the tag genuinely does not exist).
 

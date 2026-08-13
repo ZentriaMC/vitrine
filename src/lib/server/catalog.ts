@@ -6,12 +6,13 @@
  * this is reading.
  */
 
+import { env } from '$env/dynamic/private';
 import { BREAKING_ARTIFACT_TYPE, parseFindings, type BreakingFinding } from '$lib/report';
 import { catalog, manifest, referrerPayload, referrers, tags, type Manifest } from './registry';
 
 // A vitrine registry holds nothing but schema artifacts, so every repository in
 // it is a module. Set a prefix only when sharing a registry with other content.
-const PREFIX = process.env.VITRINE_REPO_PREFIX ?? '';
+const PREFIX = env.VITRINE_REPO_PREFIX ?? '';
 
 export const ARTIFACT_TYPE = 'application/vnd.zentria.protoschema.v1';
 export const DESCRIPTORSET_MEDIA_TYPE = 'application/vnd.zentria.protoschema.descriptorset.v1';
@@ -20,7 +21,7 @@ export const DESCRIPTORSET_MEDIA_TYPE = 'application/vnd.zentria.protoschema.des
  * How long a tag is trusted to point at the same digest. Tags are the only
  * mutable thing in the system; everything keyed by digest is cached forever.
  */
-const TAG_TTL_MS = Number(process.env.VITRINE_TAG_TTL_MS ?? 30_000);
+const TAG_TTL_MS = Number(env.VITRINE_TAG_TTL_MS ?? 30_000);
 
 /**
  * The referrers tag schema parks an index of attached artifacts at a tag named

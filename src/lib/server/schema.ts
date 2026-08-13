@@ -7,6 +7,7 @@
  * only bound here is memory, not correctness.
  */
 
+import { env } from '$env/dynamic/private';
 import { fromBinary } from '@bufbuild/protobuf';
 import { FileDescriptorSetSchema } from '@bufbuild/protobuf/wkt';
 import { normalize } from '$lib/normalize/normalize';
@@ -14,7 +15,7 @@ import { resolveVersion, type VersionInfo } from './catalog';
 import { blob } from './registry';
 import type { Ir } from '$lib/ir';
 
-const MAX_CACHED = Number(process.env.VITRINE_IR_CACHE ?? 32);
+const MAX_CACHED = Number(env.VITRINE_IR_CACHE ?? 32);
 
 /** digest -> Ir. Insertion order doubles as LRU order. */
 const cache = new Map<string, Ir>();

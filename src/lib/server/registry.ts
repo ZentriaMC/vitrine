@@ -11,17 +11,19 @@
  * it -- see `catalog()` for what to do instead if that ever changes.
  */
 
-const REGISTRY = process.env.VITRINE_REGISTRY ?? 'localhost:5050';
+import { env } from '$env/dynamic/private';
+
+const REGISTRY = env.VITRINE_REGISTRY ?? 'localhost:5050';
 
 /** Registries on loopback are plain HTTP; anything else is assumed to be TLS. */
 const PLAIN_HTTP =
-    process.env.VITRINE_REGISTRY_PLAIN_HTTP === '1' ||
+    env.VITRINE_REGISTRY_PLAIN_HTTP === '1' ||
     /^(localhost|127\.0\.0\.1|\[::1\])(:|$)/.test(REGISTRY);
 
 const BASE = `${PLAIN_HTTP ? 'http' : 'https'}://${REGISTRY}/v2`;
 
-const USERNAME = process.env.VITRINE_REGISTRY_USERNAME;
-const PASSWORD = process.env.VITRINE_REGISTRY_PASSWORD;
+const USERNAME = env.VITRINE_REGISTRY_USERNAME;
+const PASSWORD = env.VITRINE_REGISTRY_PASSWORD;
 
 const MANIFEST_ACCEPT = [
     'application/vnd.oci.image.manifest.v1+json',
