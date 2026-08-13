@@ -165,6 +165,24 @@ The descriptor set is resolved but not _presentable_. The normalizer:
 - **builds the reverse index.** "Used by" -- every field, request and response
   that points at a type. This is the thing `protoc-gen-doc` does worst.
 
+## Tests
+
+```sh
+just test        # or: bun run test
+```
+
+Vitest rather than `bun test`, for one concrete reason: `catalog.ts`,
+`registry.ts` and `schema.ts` import `$env/dynamic/private`, and `links.ts`
+imports `$app/paths`. Those are Vite virtual modules that only exist inside
+SvelteKit's pipeline, and `bun test` cannot resolve them without shims. Vitest
+runs through that pipeline, so the aliases and virtuals resolve for free.
+
+Fixtures in `src/lib/__fixtures__/` are real `buf build` output at two versions,
+not hand-built descriptors -- every normalizer bug here has been a specific of
+what protoc actually emits, so constructing descriptors by hand would encode the
+same misunderstanding the test is meant to catch. Two versions means the diff
+tests assert a real change set.
+
 ## Gotchas found the hard way
 
 - `buf build` includes source info by default; `protoc` needs
@@ -173,6 +191,10 @@ The descriptor set is resolved but not _presentable_. The normalizer:
   codegen import paths from it). Use `file.proto.name` for the real path.
 - An auto-layout `<table>` collapses a prose column to its longest word when
   sibling cells are `whitespace-nowrap`. Field lists are flex, not tables.
+- protobuf-es filters map entry messages and synthesized `optional` oneofs out
+  of `nestedMessages` and `oneofs` before we see them. Our own guards for both
+  are belt-and-braces; mutation testing found this by deleting them without
+  failing a single test.
 - registry:3 does not route `GET /v2/<repo>/referrers/<digest>`, even though it
   stores attachments fine. `oras discover` works because it falls back to the
   referrers tag schema -- an index parked at a `sha256-<hex>` tag. Any client

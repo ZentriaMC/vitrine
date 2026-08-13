@@ -11,7 +11,9 @@
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
         "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
         "lint": "prettier --check . && eslint .",
-        "format": "prettier --write ."
+        "format": "prettier --write .",
+        "test:unit": "vitest",
+        "test": "bun run test:unit -- --run"
     },
     "trustedDependencies": [
         "esbuild"
@@ -36,7 +38,8 @@
         "tailwindcss": "^4.3.0",
         "typescript": "^6.0.3",
         "typescript-eslint": "^8.60.1",
-        "vite": "^8.0.16"
+        "vite": "^8.0.16",
+        "vitest": "^4.1.8"
     },
     "dependencies": {
         "@bufbuild/protobuf": "^2.13.0"

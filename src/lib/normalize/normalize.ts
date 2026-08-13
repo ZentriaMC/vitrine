@@ -124,7 +124,13 @@ interface Ctx {
     xrefs: Record<string, IrRef[]>;
 }
 
-/** Visits every message in a file, nested ones included, skipping map entries. */
+/**
+ * Visits every message in a file, nested ones included, skipping map entries.
+ *
+ * protobuf-es already excludes map entries from `nestedMessages`, so this check
+ * never fires today -- it is belt-and-braces against that changing, and
+ * normalize.test.ts asserts the behaviour we are relying on.
+ */
 function eachMessage(file: DescFile, fn: (msg: DescMessage) => void): void {
     const visit = (msg: DescMessage) => {
         if (msg.proto.options?.mapEntry) return;
@@ -146,8 +152,9 @@ function eachEnum(file: DescFile, fn: (enm: DescEnum) => void): void {
 
 function normalizeMessage(msg: DescMessage, source: SourceIndex, ctx: Ctx): IrMessage {
     // protoc turns `optional string x = 1;` into a one-member oneof named `_x`.
-    // protobuf-es already hides those, but a synthesized oneof is cheap to spot
-    // and expensive to leak, so check anyway.
+    // protobuf-es already hides those -- `oneofs` is ['scaling'] where the raw
+    // proto has ['scaling', '_description'] -- so like the map entry check this
+    // is belt-and-braces, with the behaviour pinned by a test.
     const oneofs: IrOneof[] = msg.oneofs
         .filter((o) => !o.fields.every((f) => f.proto.proto3Optional))
         .map((o) => ({

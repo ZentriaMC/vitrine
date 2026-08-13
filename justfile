@@ -41,6 +41,7 @@ build fixture=default_fixture: (build-schema fixture)
 check:
     bun run check
     bun run lint
+    bun run test
 
 fmt:
     buf format -w etc/fixtures
@@ -126,3 +127,11 @@ report version base fixture=default_fixture:
         --annotation "ee.zentria.protoschema.against={{ base }}" \
         {{ registry }}/{{ fixture }}:{{ version }} \
         "$out:application/jsonl"
+
+test:
+    bun run test
+
+# Rebuild the descriptor sets the tests run against, after changing the sample
+# protos. sample-v1 is pinned history and is not regenerated.
+test-fixtures fixture=default_fixture:
+    buf build etc/fixtures/{{ fixture }} -o src/lib/__fixtures__/{{ fixture }}-v2.binpb
