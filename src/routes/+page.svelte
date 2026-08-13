@@ -9,9 +9,23 @@
     <header class="mb-8">
         <h1 class="font-mono text-xl font-semibold tracking-tight">vitrine</h1>
         <p class="mt-1 text-sm text-zinc-500">
-            {data.modules.length} schema {data.modules.length === 1 ? 'module' : 'modules'} in the registry.
+            {data.modules.length} schema {data.modules.length === 1 ? 'module' : 'modules'} in
+            <span class="font-mono">{data.registry}</span>.
         </p>
     </header>
+
+    {#if data.unreachable}
+        <div
+            class="mb-6 rounded border border-amber-200 bg-amber-50 p-3 text-sm dark:border-amber-900 dark:bg-amber-950/40"
+        >
+            <p class="font-semibold">Registry unreachable</p>
+            <p class="mt-1 text-zinc-600 dark:text-zinc-400">
+                Could not reach <span class="font-mono">{data.registry}</span>. Set
+                <span class="font-mono">VITRINE_REGISTRY</span> if that is the wrong address.
+            </p>
+            <p class="mt-1 font-mono text-xs text-zinc-500">{data.unreachable}</p>
+        </div>
+    {/if}
 
     <ul class="space-y-4">
         {#each data.modules as module (module.name)}
@@ -60,9 +74,12 @@
                 </ul>
             </li>
         {:else}
-            <li class="text-sm text-zinc-500">
-                Nothing in the registry yet. Push one with <span class="font-mono">just push</span>.
-            </li>
+            {#if !data.unreachable}
+                <li class="text-sm text-zinc-500">
+                    Nothing in the registry yet. Push one with
+                    <span class="font-mono">just push</span>.
+                </li>
+            {/if}
         {/each}
     </ul>
 </div>

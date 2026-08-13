@@ -49,6 +49,26 @@ bun install
 just dev          # registry up, push the fixture as `dev`, then serve
 ```
 
+## Deploying
+
+`adapter-node`, so `bun run build` produces a plain Node server in `build/`:
+
+```sh
+bun run build
+PORT=3000 VITRINE_REGISTRY=registry.internal:5000 node build
+```
+
+Nothing else is required at runtime. The server has exactly one non-framework
+dependency (`@bufbuild/protobuf`) and never touches `child_process` or the
+filesystem -- `buf`, `oras` and `skopeo` are build-time tools that live in the
+justfile, not the request path. Put vitrine in front of a registry, set the
+environment, and it works as-is.
+
+Configuration is read from `process.env` at startup, not inlined at build, so
+one image runs against any registry. An unreachable registry is reported rather
+than thrown: `/` renders an explanatory panel, and a schema route answers 503
+(as opposed to 404, which means the tag genuinely does not exist).
+
 ## Registry model
 
 A vitrine registry holds nothing but schema artifacts, so every repository in it

@@ -1,12 +1,20 @@
 import { error } from '@sveltejs/kit';
 import { listModules } from '$lib/server/catalog';
+import { RegistryError, registryHost } from '$lib/server/registry';
 import { loadSchema } from '$lib/server/schema';
 import type { IrNode } from '$lib/ir';
 import type { NavSymbol } from '$lib/nav';
 import type { LayoutServerLoad } from './$types';
 
 export const load: LayoutServerLoad = async ({ params }) => {
-    const loaded = await loadSchema(params.module, params.version).catch(() => null);
+    // A missing tag is the caller's problem; an unreachable registry is ours.
+    const loaded = await loadSchema(params.module, params.version).catch((err: unknown) => {
+        if (err instanceof RegistryError && err.status === 404) return null;
+        error(
+            503,
+            `Registry ${registryHost} unavailable: ${err instanceof Error ? err.message : err}`
+        );
+    });
     if (!loaded) error(404, `No schema at ${params.module}:${params.version}`);
 
     const { ir, info } = loaded;
