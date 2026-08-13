@@ -191,6 +191,16 @@ tests assert a real change set.
   codegen import paths from it). Use `file.proto.name` for the real path.
 - An auto-layout `<table>` collapses a prose column to its longest word when
   sibling cells are `whitespace-nowrap`. Field lists are flex, not tables.
+- Doc comments are Markdown by convention, not by the protobuf spec, which says
+  nothing about comment content. AIP-192 requires Google API documentation to be
+  Markdown and the BSR renders it that way, which is why `google.api.HttpRule`'s
+  comment is 272 lines opening with an ATX heading.
+- A GFM table row must be on one line, but proto comments hard-wrap at ~80
+  columns. A wrapped row is cut in half: the table keeps the first line and the
+  remainder falls out below it, splitting any code span across the break and
+  leaving literal backticks on screen. `renderMarkdown` rejoins continuation
+  lines -- inside a table body they are recognisable by carrying no column
+  separator -- before handing the text to the parser.
 - protobuf-es filters map entry messages and synthesized `optional` oneofs out
   of `nestedMessages` and `oneofs` before we see them. Our own guards for both
   are belt-and-braces; mutation testing found this by deleting them without
