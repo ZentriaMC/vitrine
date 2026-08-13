@@ -54,22 +54,30 @@
         const id = page.route.id ?? '';
 
         if (fqn && id.endsWith('/t/[fqn]')) {
-            return resolve('/s/[module]/[version]/t/[fqn]', { module, version, fqn });
+            return resolve('/s/[...module=module]/[version=version]/t/[fqn]', {
+                module,
+                version,
+                fqn
+            });
         }
         if (fqn && id.endsWith('/m/[fqn]')) {
-            return resolve('/s/[module]/[version]/m/[fqn]', { module, version, fqn });
+            return resolve('/s/[...module=module]/[version=version]/m/[fqn]', {
+                module,
+                version,
+                fqn
+            });
         }
         if (id.endsWith('/services')) {
-            return resolve('/s/[module]/[version]/services', { module, version });
+            return resolve('/s/[...module=module]/[version=version]/services', { module, version });
         }
         if (page.params.against && id.endsWith('/diff/[against]')) {
-            return resolve('/s/[module]/[version]/diff/[against]', {
+            return resolve('/s/[...module=module]/[version=version]/diff/[against]', {
                 module,
                 version,
                 against: page.params.against
             });
         }
-        return resolve('/s/[module]/[version]', { module, version });
+        return resolve('/s/[...module=module]/[version=version]', { module, version });
     }
 </script>
 
@@ -91,7 +99,7 @@
         <a href={resolve('/')} class="font-mono text-sm font-semibold tracking-tight">vitrine</a>
         <span class="font-mono text-xs text-zinc-500">{data.module}:{data.version}</span>
         <a
-            href={resolve('/s/[module]/[version]/services', {
+            href={resolve('/s/[...module=module]/[version=version]/services', {
                 module: data.module,
                 version: data.version
             })}
@@ -120,7 +128,7 @@
                 >
                 <span class="flex gap-3">
                     <a
-                        href={resolve('/s/[module]/[version]/services', {
+                        href={resolve('/s/[...module=module]/[version=version]/services', {
                             module: data.module,
                             version: data.version
                         })}
@@ -176,7 +184,7 @@
                         </p>
                         {#each file.symbols as sym (sym.fqn)}
                             <a
-                                href={resolve('/s/[module]/[version]/t/[fqn]', {
+                                href={resolve('/s/[...module=module]/[version=version]/t/[fqn]', {
                                     module: data.module,
                                     version: data.version,
                                     fqn: sym.fqn

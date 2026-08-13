@@ -36,7 +36,7 @@
         <dd>
             <a
                 class="text-sky-700 hover:underline dark:text-sky-400"
-                href={resolve('/s/[module]/[version]/schema.binpb', {
+                href={resolve('/s/[...module=module]/[version=version]/schema.binpb', {
                     module: data.module,
                     version: data.version
                 })}>descriptor set</a

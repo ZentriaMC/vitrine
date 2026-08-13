@@ -16,23 +16,26 @@ const scope = () => ({
 });
 
 export function typeHref(fqn: string): string {
-    return resolve('/s/[module]/[version]/t/[fqn]', { ...scope(), fqn });
+    return resolve('/s/[...module=module]/[version=version]/t/[fqn]', { ...scope(), fqn });
 }
 
 export function methodHref(fqn: string): string {
-    return resolve('/s/[module]/[version]/m/[fqn]', { ...scope(), fqn });
+    return resolve('/s/[...module=module]/[version=version]/m/[fqn]', { ...scope(), fqn });
 }
 
 export function schemaHref(): string {
-    return resolve('/s/[module]/[version]', scope());
+    return resolve('/s/[...module=module]/[version=version]', scope());
 }
 
 export function servicesHref(): string {
-    return resolve('/s/[module]/[version]/services', scope());
+    return resolve('/s/[...module=module]/[version=version]/services', scope());
 }
 
 export function diffHref(against: string): string {
-    return resolve('/s/[module]/[version]/diff/[against]', { ...scope(), against });
+    return resolve('/s/[...module=module]/[version=version]/diff/[against]', {
+        ...scope(),
+        against
+    });
 }
 
 /**

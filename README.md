@@ -101,6 +101,18 @@ A vitrine registry holds nothing but schema artifacts, so every repository in it
 is a module and every tag is a version. That is why discovery needs no config:
 `_catalog` lists modules, `tags/list` lists versions.
 
+Module names may be any depth -- `vex`, `zentria/vex`, `zentria/platform/vex` --
+because registries namespace repositories with slashes and forcing a flat name
+would be vitrine dictating how you organise your registry. The route parameter
+is a rest parameter as a result, which needs two param matchers to work:
+`[...module]` compiles to a greedy pattern, so for
+`/s/sample/v2.0.0/diff/v1.10.0` it swallows `sample/v2.0.0/diff` and matches the
+overview route before the diff route is tried. `src/params/` rejects a module
+ending in a sub-route segment, and a version that is one, which makes the wrong
+match fail so SvelteKit falls through to the right route. The cost is that a
+module or version literally named `diff`, `services`, `t`, `m` or
+`schema.binpb` would be shadowed by its own sub-route.
+
 `_catalog` is optional in the distribution spec -- registry:3 and Harbor
 implement it, ghcr.io and Docker Hub do not. Set `VITRINE_REPO_PREFIX` to share
 a registry with other content, and swap `catalog()` for a configured module list

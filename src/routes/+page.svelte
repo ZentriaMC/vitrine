@@ -42,7 +42,7 @@
             <li class="border-t border-zinc-200 pt-4 dark:border-zinc-800">
                 <div class="flex flex-wrap items-baseline gap-x-3">
                     <a
-                        href={resolve('/s/[module]/[version]', {
+                        href={resolve('/s/[...module=module]/[version=version]', {
                             module: module.name,
                             version: module.versions[0]
                         })}
@@ -71,7 +71,7 @@
                     {#each module.versions.slice(0, 8) as version (version)}
                         <li>
                             <a
-                                href={resolve('/s/[module]/[version]', {
+                                href={resolve('/s/[...module=module]/[version=version]', {
                                     module: module.name,
                                     version
                                 })}
